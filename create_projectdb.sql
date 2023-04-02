@@ -5,7 +5,7 @@ USE project_testdb;
 
 # Create a nba player table with the following columns:
 # player_id, first_name, last_name, is_active
-DROP TABLE IF EXISTS nba_players;
+DROP TABLE IF EXISTS players;
 CREATE TABLE nba_players
 (
     player_id     INT         NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE nba_players
 
 # Create a nba team table with the following columns:
 # team_id, team_name, abbreviation, nickname, city, state, year_founded
-DROP TABLE IF EXISTS nba_teams;
+DROP TABLE IF EXISTS teams;
 CREATE TABLE nba_teams
 (
     team_id      INT         NOT NULL,
@@ -46,7 +46,7 @@ CREATE PROCEDURE create_nba_team(
     IN year_founded_p INT
 )
 BEGIN
-    INSERT INTO nba_teams (team_id, team_name, abbreviation, nickname, city, state, year_founded)
+    INSERT INTO teams (team_id, team_name, abbreviation, nickname, city, state, year_founded)
     VALUES (team_id_p, team_name_p, abbreviation_p, nickname_p, city_p, state_p, year_founded_p);
 END;
 
@@ -64,7 +64,7 @@ CREATE TABLE player_position_link
     player_id   INT NOT NULL,
     position_id INT NOT NULL,
     PRIMARY KEY (player_id, position_id),
-    FOREIGN KEY (player_id) REFERENCES nba_players (player_id)
+    FOREIGN KEY (player_id) REFERENCES players (player_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     FOREIGN KEY (position_id) REFERENCES positions (position_id)
@@ -79,10 +79,10 @@ CREATE TABLE player_team_link
     team_id     INT NOT NULL,
     season_year INT DEFAULT -1,
     PRIMARY KEY (player_id, team_id, season_year),
-    FOREIGN KEY (player_id) REFERENCES nba_players (player_id)
+    FOREIGN KEY (player_id) REFERENCES players (player_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-    FOREIGN KEY (team_id) REFERENCES nba_teams (team_id)
+    FOREIGN KEY (team_id) REFERENCES teams (team_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
@@ -126,7 +126,7 @@ BEGIN
     END IF;
 
     # Insert the player into the nba_players table
-    INSERT INTO nba_players (player_id, first_name, last_name, birth_date, height, jersey_number,
+    INSERT INTO players (player_id, first_name, last_name, birth_date, height, jersey_number,
                              is_active, season_exp)
     VALUES (player_id_p, first_name_p, last_name_p, birth_date_p, height_p, jersey_number_p,
             is_active_p, season_exp_p);
@@ -152,13 +152,13 @@ CREATE TABLE games
     team1_pts INT  NOT NULL,
     team2_pts INT  NOT NULL,
     winner_id INT DEFAULT -1,
-    FOREIGN KEY (team1_id) REFERENCES nba_teams (team_id)
+    FOREIGN KEY (team1_id) REFERENCES teams (team_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-    FOREIGN KEY (team2_id) REFERENCES nba_teams (team_id)
+    FOREIGN KEY (team2_id) REFERENCES teams (team_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-    FOREIGN KEY (winner_id) REFERENCES nba_teams (team_id)
+    FOREIGN KEY (winner_id) REFERENCES teams (team_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     PRIMARY KEY (game_id)
@@ -203,13 +203,13 @@ CREATE TABLE player_game_stats
     fouls          INT NOT NULL,
     minutes_played INT NOT NULL,
     PRIMARY KEY (player_id, game_id),
-    FOREIGN KEY (player_id) REFERENCES nba_players (player_id)
+    FOREIGN KEY (player_id) REFERENCES players (player_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     FOREIGN KEY (game_id) REFERENCES games (game_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-    FOREIGN KEY (team_id) REFERENCES nba_teams (team_id)
+    FOREIGN KEY (team_id) REFERENCES teams (team_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );

@@ -1,19 +1,18 @@
+import os
 import time
 
 import pandas as pd
-from nba_api.stats.static.players import *
-from nba_api.stats.static.teams import *
-from nba_api.stats.endpoints import playercareerstats, commonplayerinfo, teamgamelog, \
-    LeagueGameFinder, PlayerGameLogs, PlayerGameLog
-import os
 import pymysql.cursors
 from dotenv import load_dotenv
+from nba_api.stats.endpoints import commonplayerinfo, LeagueGameFinder, PlayerGameLog
+from nba_api.stats.static.players import *
+from nba_api.stats.static.teams import *
 
 
 # create player
 def update_players(cursor):
     # Find all player_id from nba_players table
-    cursor.execute("SELECT player_id FROM nba_players")
+    cursor.execute("SELECT player_id FROM players")
     player_ids = cursor.fetchall()
     player_ids = [player['player_id'] for player in player_ids]
 
@@ -76,7 +75,7 @@ def update_players(cursor):
 
 
 def update_teams(cursor):
-    cursor.execute("SELECT team_id FROM nba_teams")
+    cursor.execute("SELECT team_id FROM teams")
     team_ids = cursor.fetchall()
     team_ids = [team['team_id'] for team in team_ids]
 
@@ -104,7 +103,7 @@ def update_teams(cursor):
 
 
 def combine_team_games(df, keep_method='home'):
-    '''Combine a TEAM_ID-GAME_ID unique table into rows by game. Slow.
+    """Combine a TEAM_ID-GAME_ID unique table into rows by game. Slow.
 
         Parameters
         ----------
@@ -120,7 +119,7 @@ def combine_team_games(df, keep_method='home'):
         Returns
         -------
         result : DataFrame
-    '''
+    """
     # Join every row to all others with the same game ID.
     joined = pd.merge(df, df, suffixes=['_A', '_B'],
                       on=['SEASON_ID', 'GAME_ID', 'GAME_DATE'])
@@ -155,7 +154,7 @@ def update_games(cursor, season):
     new_game_ids = []
 
     # Get list of teams
-    cursor.execute("SELECT team_id, team_name FROM nba_teams")
+    cursor.execute("SELECT team_id, team_name FROM teams")
     nba_teams = cursor.fetchall()
     nba_teams = [team for team in nba_teams if team['team_id'] != -1]
 
@@ -216,7 +215,6 @@ def update_games(cursor, season):
 
 def update_player_stats(cursor, player_id, team_id, season):
     # Gets the game log for each season
-    # TODO: Can be used to get the game log for each player for each game
     player_game_log = PlayerGameLog(player_id=player_id,
                                     season=season,
                                     season_type_all_star='Regular Season').get_data_frames()[0]
@@ -247,7 +245,7 @@ def update_player_stats(cursor, player_id, team_id, season):
 
 
 def create_all_player_stats(cursor):
-    cursor.execute("SELECT player_id FROM nba_players")
+    cursor.execute("SELECT player_id FROM players")
     all_players = cursor.fetchall()
     player_ids = [player['player_id'] for player in all_players]
 
