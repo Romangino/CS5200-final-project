@@ -5,3 +5,4 @@ PyMySQL==1.0.3
 pandas~=1.5.3
 python-dotenv~=1.0.0
 nba_api==1.2
+bcrypt~=4.0.1
