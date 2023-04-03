@@ -13,22 +13,22 @@ def login(cursor):
         # TODO: Create stored procedure check_username in login_procs.sql
         cursor.callproc('check_username', (username_p,))
         result = cursor.fetchone()
-        if result is None:
+        if result is not None:
+            break
+        else:
             print("Username does not exist")
             print("Please try again")
-        else:
-            break
 
     while True:
         password_p = input("Password: ")
         # TODO: Create stored procedure check_password in login_procs.sql
         cursor.callproc('check_password', (password_p,))
         result = cursor.fetchone()
-        if result is None:
-            print("Password does not exist")
-            print("Please try again")
-        else:
+        if result is not None:
             break
+        else:
+            print("Incorrect password")
+            print("Please try again")
 
     print("Logging in...")
 
@@ -115,10 +115,12 @@ def register(cursor):
                      new_user['password'],
                      new_user['account_type']))
     result = cursor.fetchone()
-    status = result
 
-    print("Welcome, " + new_user['username'] + "!")
-    return new_user
+    if result is not None:
+        print("Welcome, " + new_user['username'] + "!")
+        return new_user
+
+    return None
 
 
 def get_hashed_password(plain_text_password):
