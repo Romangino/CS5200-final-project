@@ -126,7 +126,7 @@ CREATE TABLE users
 (
     user_id       INT         NOT NULL AUTO_INCREMENT,
     username      VARCHAR(50) NOT NULL,
-    password_hash VARCHAR(50) NOT NULL,
-    account_type  ENUM('ADMIN', 'USER') NOT NULL DEFAULT 'USER',
+    password_hash VARCHAR(60) NOT NULL,
+    admin         BOOLEAN     NOT NULL DEFAULT FALSE,
     PRIMARY KEY (user_id)
 );
