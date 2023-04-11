@@ -10,41 +10,41 @@ def login(cursor):
     print("Please enter your username and password")
     while True:
         username_p = input("Username: ")
-        # TODO: Create stored procedure check_username in login_procs.sql
         cursor.callproc('check_username', (username_p,))
         result = cursor.fetchone()
-        if result is None:
+        if result is not None:
+            break
+        else:
             print("Username does not exist")
             print("Please try again")
-        else:
-            break
 
     while True:
         password_p = input("Password: ")
-        # TODO: Create stored procedure check_password in login_procs.sql
-        cursor.callproc('check_password', (password_p,))
+        cursor.callproc('get_password_hash', (username_p,))
         result = cursor.fetchone()
-        if result is None:
-            print("Password does not exist")
-            print("Please try again")
-        else:
-            break
+        if result is not None:
+            hashed_password = result['password_hash']
+            if check_password(password_p, hashed_password):
+                break
+        print("Incorrect password")
+        print("Please try again")
 
     print("Logging in...")
 
     # Call the stored procedure to log in the user
-    # TODO: Create stored procedure login_user in login_procs.sql
-    cursor.callproc('login_user', (username_p, password_p))
+    cursor.callproc('get_user', (username_p,))
     result = cursor.fetchone()
 
+    user_id = result['user_id']
     username = result['username']
-    password = result['password_hash']
-    account_type = result['account_type']
+    hashed_password = result['password_hash']
+    admin = result['admin']
 
     returning_user = {
+        "user_id": user_id,
         "username": username,
-        "password": password,
-        "account_type": account_type
+        "hashed_password": hashed_password,
+        "admin": admin
     }
 
     print("Welcome back, " + returning_user['username'] + "!")
@@ -61,9 +61,8 @@ def register(cursor):
     print("Please enter your username and password")
 
     while True:
-        username = input("Username: ")
-        # TODO: Create stored procedure check_username in login_procs.sql
-        cursor.callproc('check_username', (username,))
+        username_p = input("Username: ")
+        cursor.callproc('check_username', (username_p,))
         result = cursor.fetchone()
         if result is not None:
             print("Username already exists")
@@ -74,7 +73,7 @@ def register(cursor):
     hashed_password = get_hashed_password(input("Password: "))
     while True:
         confirm_password = input("Confirm Password: ")
-        if hashed_password == get_hashed_password(confirm_password):
+        if check_password(confirm_password, hashed_password):
             break
         else:
             print("Passwords do not match")
@@ -85,14 +84,13 @@ def register(cursor):
         print("1. User")
         print("2. Admin")
         account_type = input("Account Type: ")
-
         if account_type == "1":
-            account_type = "USER"
+            admin = False
             break
         elif account_type == "2":
             security_code = input("Enter Security Code (FOR TESTING: 1234): ")
             if security_code == "1234":
-                account_type = "ADMIN"
+                admin = True
                 break
             else:
                 print("Invalid Security Code")
@@ -101,24 +99,18 @@ def register(cursor):
             print("Invalid Account Type")
             print("Please try again")
 
-    new_user = {
-        "username": username,
-        "password": hashed_password,
-        "account_type": account_type
-    }
     print("Registering...")
 
     # Call the stored procedure to register the user
-    # TODO: Create stored procedure register_user in login_procs.sql
-    cursor.callproc('register_user',
-                    (new_user['username'],
-                     new_user['password'],
-                     new_user['account_type']))
+    cursor.callproc('create_user', (username_p,
+                                    hashed_password,
+                                    admin))
+    cursor.callproc('get_user', username_p,)
     result = cursor.fetchone()
-    status = result
-
-    print("Welcome, " + new_user['username'] + "!")
-    return new_user
+    if result is not None:
+        print("Welcome, " + result['username'] + "!")
+        return result
+    return None
 
 
 def get_hashed_password(plain_text_password):
