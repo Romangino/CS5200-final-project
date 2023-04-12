@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
+from users import admin, user
 from users.account import login, register
 import pymysql.cursors
 
@@ -64,7 +65,6 @@ def start_screen(cursor):
         match option:
             case "1":
                 return login(cursor)
-
             case "2":
                 return register(cursor)
             case "3":
@@ -92,7 +92,13 @@ def main():
         current_user = start_screen(cursor)
 
         if current_user is not None:
-            print(current_user)
+            match current_user['admin']:
+                case 1:
+                    admin.menu(cursor)
+                case 0:
+                    user.menu(cursor)
+                case _:
+                    print("Error: Invalid admin value! Account error contact admin!")
 
         quit_program(cursor, connection)
 
