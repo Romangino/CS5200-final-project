@@ -7,12 +7,12 @@ def menu(cursor):
     :return: None
     """
     while True:
-        print("Welcome to the admin menu!")
+        print("\nWelcome to the admin menu!")
         print("Select an option: ")
         print("1. Players")
         print("2. Teams")
         print("3. Games")
-        print("4. Exit")
+        print("4. Back to main menu")
         option = input("Enter option #: ")
         match option:
             case "1":
@@ -34,13 +34,13 @@ def player_menu_admin(cursor):
     :return:
     """
     while True:
-        print("Welcome to the player menu!")
+        print("\nWelcome to the Player menu!")
         print("Select an option: ")
         print("1. Add Player")
         print("2. View Player")
         print("3. Update Player")
         print("4. Delete Player")
-        print("5. Exit")
+        print("5. Back to main menu")
         option = input("Enter option #: ")
         match option:
             case "1":

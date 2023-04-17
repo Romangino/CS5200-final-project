@@ -29,7 +29,7 @@ def login(cursor):
         print("Incorrect password")
         print("Please try again")
 
-    print("Logging in...")
+    print("Logging in...\n")
 
     # Call the stored procedure to log in the user
     cursor.callproc('get_user', (username_p,))
@@ -99,7 +99,7 @@ def register(cursor):
             print("Invalid Account Type")
             print("Please try again")
 
-    print("Registering...")
+    print("Registering...\n")
 
     # Call the stored procedure to register the user
     cursor.callproc('create_user', (username_p,
