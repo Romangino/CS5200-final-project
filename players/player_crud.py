@@ -298,6 +298,7 @@ def delete_player(cursor):
     :return:
     """
     print("Please enter Player ID of the player you want to delete")
+    print("WARNING: This will delete all data associated with this player!")
     player_id = input("Player ID: ")
     try:
         cursor.callproc('view_player_by_id', (player_id,))

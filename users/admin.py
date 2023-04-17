@@ -1,30 +1,5 @@
 from players.player_crud import add_player, view_player, update_player, delete_player
-
-
-def menu(cursor):
-    """
-    Displays the admin menu
-    :return: None
-    """
-    while True:
-        print("\nWelcome to the admin menu!")
-        print("Select an option: ")
-        print("1. Players")
-        print("2. Teams")
-        print("3. Games")
-        print("4. Back to main menu")
-        option = input("Enter option #: ")
-        match option:
-            case "1":
-                player_menu_admin(cursor)
-            case "2":
-                teams_menu_admin(cursor)
-            case "3":
-                games_menu_admin(cursor)
-            case "4":
-                return
-            case _:
-                print("\nInvalid option\n")
+from teams.team_crud import add_team, view_team, update_team, delete_team
 
 
 def player_menu_admin(cursor):
@@ -52,6 +27,62 @@ def player_menu_admin(cursor):
             case "4":
                 delete_player(cursor)
             case "5":
+                return
+            case _:
+                print("\nInvalid option\n")
+
+
+def teams_menu_admin(cursor):
+    """
+    Displays the team menu
+    :param cursor:
+    :return:
+    """
+    while True:
+        print("\nWelcome to the Team menu!")
+        print("Select an option: ")
+        print("1. Add Team")
+        print("2. View Team")
+        print("3. Update Team")
+        print("4. Delete Team")
+        print("5. Back to main menu")
+        option = input("Enter option #: ")
+        match option:
+            case "1":
+                add_team(cursor)
+            case "2":
+                view_team(cursor)
+            case "3":
+                update_team(cursor)
+            case "4":
+                delete_team(cursor)
+            case "5":
+                return
+            case _:
+                print("\nInvalid option\n")
+
+
+def menu(cursor):
+    """
+    Displays the admin menu
+    :return: None
+    """
+    while True:
+        print("\nWelcome to the admin menu!")
+        print("Select an option: ")
+        print("1. Players")
+        print("2. Teams")
+        print("3. Games")
+        print("4. Back to main menu")
+        option = input("Enter option #: ")
+        match option:
+            case "1":
+                player_menu_admin(cursor)
+            case "2":
+                teams_menu_admin(cursor)
+            case "3":
+                games_menu_admin(cursor)
+            case "4":
                 return
             case _:
                 print("\nInvalid option\n")
