@@ -22,15 +22,15 @@ CREATE TABLE players
 # Create a nba team table with the following columns:
 # team_id, team_name, abbreviation, nickname, city, state, year_founded
 DROP TABLE IF EXISTS teams;
-CREATE TABLE nba_teams
+CREATE TABLE teams
 (
     team_id      INT         NOT NULL,
-    team_name    VARCHAR(50) NULL,
-    abbreviation VARCHAR(3)  NULL,
-    nickname     VARCHAR(50) NULL,
-    city         VARCHAR(50) NULL,
-    state        VARCHAR(50) NULL,
-    year_founded INT         NULL,
+    team_name    VARCHAR(50) NOT NULL ,
+    abbreviation VARCHAR(3)  NOT NULL ,
+    nickname     VARCHAR(50) NOT NULL ,
+    city         VARCHAR(50) NOT NULL ,
+    state        VARCHAR(50) NOT NULL ,
+    year_founded INT         NOT NULL ,
     PRIMARY KEY (team_id)
 );
 
