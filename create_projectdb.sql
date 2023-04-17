@@ -6,7 +6,7 @@ USE project_testdb;
 # Create a nba player table with the following columns:
 # player_id, first_name, last_name, is_active
 DROP TABLE IF EXISTS players;
-CREATE TABLE nba_players
+CREATE TABLE players
 (
     player_id     INT         NOT NULL,
     first_name    VARCHAR(50) NOT NULL,
