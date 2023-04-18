@@ -63,7 +63,6 @@ def teams_menu_admin(cursor):
                 print("\nInvalid option\n")
 
 
-# TODO: Write functionality for Admin CRUD on games
 def games_menu_admin(cursor):
     """
     Displays the game menu
