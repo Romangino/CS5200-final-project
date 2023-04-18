@@ -31,3 +31,14 @@ BEGIN
             game_date_p,
             winner_id_p);
 END;
+
+# Procedure to view game by game_id
+DROP PROCEDURE IF EXISTS view_game_by_id;
+CREATE PROCEDURE view_game_by_id(
+    IN game_id_p INT)
+BEGIN
+    SELECT *
+    FROM games
+    WHERE game_id = game_id_p;
+END;
+

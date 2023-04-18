@@ -34,16 +34,16 @@ def add_game(cursor):
         winner_name = cursor.fetchone()['team_name']
 
         print("\nHome Team: %s"
-              "\nAway Team: %s"
-              "\nHome Team Points: %s"
-              "\nAway Team Points: %s"
-              "\nWinner: %s"
-              "\nGame Date: %s" % (home_team_name,
-                                   away_team_name,
-                                   home_team_pts,
-                                   away_team_pts,
-                                   winner_name,
-                                   game_date))
+              "Away Team: %s"
+              "Home Team Points: %s"
+              "Away Team Points: %s"
+              "Winner: %s"
+              "Game Date: %s" % (home_team_name,
+                                 away_team_name,
+                                 home_team_pts,
+                                 away_team_pts,
+                                 winner_name,
+                                 game_date))
 
         game_add_confirm = input("Add game? (Y/N): ").upper()
         while game_add_confirm not in ["Y", "N"]:
@@ -75,16 +75,27 @@ def view_game(cursor):
         game_id = input("Enter game ID: ")
         cursor.callproc("view_game_by_id", (game_id,))
         game_result = cursor.fetchone()
+        cursor.callproc("view_team_by_id", (game_result['team1_id'],))
+        home_team_name = cursor.fetchone()['team_name']
+        cursor.callproc("view_team_by_id", (game_result['team2_id'],))
+        away_team_name = cursor.fetchone()['team_name']
+        cursor.callproc("view_team_by_id", (game_result['winner_id'],))
+        winner_name = cursor.fetchone()['team_name']
+
         if game_result:
             print("\nGame ID: %s"
-                  "\nHome Team ID: %s"
-                  "\nAway Team ID: %s"
-                  "\nGame Date: %s"
-                  "\nGame Time: %s" % (game_result[0],
-                                       game_result[1],
-                                       game_result[2],
-                                       game_result[3],
-                                       game_result[4]))
+                  "Home Team: %s"
+                  "Away Team: %s"
+                  "Home Team Points: %s"
+                  "Away Team Points: %s"
+                  "Winner: %s"
+                  "Game Date: %s" % (game_result['game_id'],
+                                     home_team_name,
+                                     away_team_name,
+                                     game_result['team1_pts'],
+                                     game_result['team2_pts'],
+                                     winner_name,
+                                     game_result['game_date']))
             return
     except pymysql.Error as e:
         print("Error %d: %s" % (e.args[0], e.args[1]))
@@ -104,14 +115,14 @@ def update_game(cursor):
         game_result = cursor.fetchone()
         if game_result:
             print("\nGame ID: %s"
-                  "\nHome Team ID: %s"
-                  "\nAway Team ID: %s"
-                  "\nGame Date: %s"
-                  "\nGame Time: %s" % (game_result[0],
-                                       game_result[1],
-                                       game_result[2],
-                                       game_result[3],
-                                       game_result[4]))
+                  "Home Team ID: %s"
+                  "Away Team ID: %s"
+                  "Game Date: %s"
+                  "Game Time: %s" % (game_result['game_id'],
+                                     game_result['team1_id'],
+                                     game_result['team2_id'],
+                                     game_result['game_date'],
+                                     game_result['game_time']))
             game_update_confirm = input("Update game? (Y/N): ")
             if game_update_confirm == "Y":
                 home_team_id = input("Enter home team ID: ")
