@@ -42,3 +42,25 @@ BEGIN
     WHERE game_id = game_id_p;
 END;
 
+# Procedure to update game by game_id
+DROP PROCEDURE IF EXISTS update_game;
+CREATE PROCEDURE update_game(
+    IN game_id_p INT,
+    IN team1_id_p INT,
+    IN team2_id_p INT,
+    IN team1_pts_p INT,
+    IN team2_pts_p INT,
+    IN game_date_p DATE,
+    IN winner_id_p INT)
+BEGIN
+    UPDATE games
+    SET team1_id = team1_id_p,
+        team2_id = team2_id_p,
+        team1_pts = team1_pts_p,
+        team2_pts = team2_pts_p,
+        game_date = game_date_p,
+        winner_id = winner_id_p
+    WHERE game_id = game_id_p;
+END;
+
+

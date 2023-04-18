@@ -105,12 +105,12 @@ def register(cursor):
     cursor.callproc('create_user', (username_p,
                                     hashed_password,
                                     admin))
-    cursor.callproc('get_user', username_p,)
-    result = cursor.fetchone()
-    if result is not None:
-        print("Welcome, " + result['username'] + "!")
-        return result
-    return None
+    new_user = {
+        "username": username_p,
+        "hashed_password": hashed_password,
+        "admin": admin
+    }
+    return new_user
 
 
 def get_hashed_password(plain_text_password):
