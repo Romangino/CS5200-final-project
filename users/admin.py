@@ -1,3 +1,4 @@
+from games.game_crud import add_game, view_game, update_game, delete_game
 from players.player_crud import add_player, view_player, update_player, delete_player
 from teams.team_crud import add_team, view_team, update_team, delete_team
 
@@ -64,7 +65,33 @@ def teams_menu_admin(cursor):
 
 # TODO: Write functionality for Admin CRUD on games
 def games_menu_admin(cursor):
-    pass
+    """
+    Displays the game menu
+    :param cursor:
+    :return:
+    """
+    while True:
+        print("\nWelcome to the Game menu!")
+        print("Select an option: ")
+        print("1. Add Game")
+        print("2. View Game")
+        print("3. Update Game")
+        print("4. Delete Game")
+        print("5. Back to main menu")
+        option = input("Enter option #: ")
+        match option:
+            case "1":
+                add_game(cursor)
+            case "2":
+                view_game(cursor)
+            case "3":
+                update_game(cursor)
+            case "4":
+                delete_game(cursor)
+            case "5":
+                return
+            case _:
+                print("\nInvalid option\n")
 
 
 def menu(cursor):
