@@ -12,6 +12,7 @@ def create_connection():
     Creates a connection to the database
     :return: The connection object
     """
+    # TODO: Replace this since dotenv is not working
     load_dotenv()
     DB_HOST = os.getenv('DB_HOST') if os.getenv('DB_HOST') is not None else input(
         "Enter MySQL hostname: ")
