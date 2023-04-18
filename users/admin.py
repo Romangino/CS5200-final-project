@@ -104,7 +104,7 @@ def menu(cursor):
         print("1. Players")
         print("2. Teams")
         print("3. Games")
-        print("4. Back to main menu")
+        print("4. Exit")
         option = input("Enter option #: ")
         match option:
             case "1":
