@@ -19,11 +19,11 @@ def login(cursor):
             print("Please try again")
 
     while True:
-        password_p = input("Password: ")
+        password_p = input("Password: ").encode()
         cursor.callproc('get_password_hash', (username_p,))
         result = cursor.fetchone()
         if result is not None:
-            hashed_password = result['password_hash']
+            hashed_password = result['password_hash'].encode()
             if check_password(password_p, hashed_password):
                 break
         print("Incorrect password")
@@ -70,9 +70,9 @@ def register(cursor):
         else:
             break
 
-    hashed_password = get_hashed_password(input("Password: "))
+    hashed_password = get_hashed_password(input("Password: ").encode())
     while True:
-        confirm_password = input("Confirm Password: ")
+        confirm_password = input("Confirm Password: ").encode()
         if check_password(confirm_password, hashed_password):
             break
         else:

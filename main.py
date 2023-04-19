@@ -6,15 +6,6 @@ from users import admin, user
 from users.account import login, register
 import pymysql.cursors
 
-DB_HOST = os.getenv('DB_HOST') if os.getenv('DB_HOST') is not None else input(
-        "Enter MySQL hostname: ")
-DB_USER = os.getenv('DB_USER') if os.getenv('DB_USER') is not None else input(
-        "Enter MySQL user: ")
-DB_PASSWORD = os.getenv('DB_PASSWORD') if os.getenv('DB_PASSWORD') is not None else input(
-        "Enter MySQL password: ")
-DB_NAME = os.getenv('DB_NAME') if os.getenv('DB_NAME') is not None else input(
-        "Enter MySQL database: ")
-
 
 def create_connection():
     """
@@ -22,6 +13,15 @@ def create_connection():
     :return: The connection object
     """
     load_dotenv()
+
+    DB_HOST = os.getenv('DB_HOST') if os.getenv('DB_HOST') is not None else input(
+        "Enter MySQL hostname: ")
+    DB_USER = os.getenv('DB_USER') if os.getenv('DB_USER') is not None else input(
+        "Enter MySQL user: ")
+    DB_PASSWORD = os.getenv('DB_PASSWORD') if os.getenv('DB_PASSWORD') is not None else input(
+        "Enter MySQL password: ")
+    DB_NAME = os.getenv('DB_NAME') if os.getenv('DB_NAME') is not None else input(
+        "Enter MySQL database: ")
 
     connection = pymysql.connect(host=DB_HOST,
                                  user=DB_USER,
