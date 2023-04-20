@@ -25,9 +25,9 @@ DROP TABLE IF EXISTS teams;
 CREATE TABLE teams
 (
     team_id      INT         NOT NULL,
-    team_name    VARCHAR(50) NOT NULL ,
-    abbreviation VARCHAR(3)  NOT NULL ,
-    nickname     VARCHAR(50) NOT NULL ,
+    team_name    VARCHAR(50) NOT NULL UNIQUE ,
+    abbreviation VARCHAR(3)  NOT NULL UNIQUE ,
+    nickname     VARCHAR(50) NOT NULL UNIQUE ,
     city         VARCHAR(50) NOT NULL ,
     state        VARCHAR(50) NOT NULL ,
     year_founded INT         NOT NULL ,
@@ -38,7 +38,7 @@ DROP TABLE IF EXISTS positions;
 CREATE TABLE positions
 (
     position_id   INT NOT NULL AUTO_INCREMENT,
-    position_name VARCHAR(50) DEFAULT 'Unknown',
+    position_name VARCHAR(50) DEFAULT 'Unknown' UNIQUE ,
     PRIMARY KEY (position_id)
 );
 
@@ -120,12 +120,12 @@ CREATE TABLE player_game_stats
         ON UPDATE CASCADE
 );
 
-# Create table for users, passwords, and account_types
+# Create table for users, passwords, and account types
 DROP TABLE IF EXISTS users;
 CREATE TABLE users
 (
     user_id       INT         NOT NULL AUTO_INCREMENT,
-    username      VARCHAR(50) NOT NULL,
+    username      VARCHAR(50) NOT NULL UNIQUE ,
     password_hash VARCHAR(60) NOT NULL,
     admin         BOOLEAN     NOT NULL DEFAULT FALSE,
     PRIMARY KEY (user_id)
