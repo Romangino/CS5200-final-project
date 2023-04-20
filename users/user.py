@@ -231,7 +231,8 @@ def graphs_menu_user(cursor):
         print("What would you like to view?")
         print("1. total points per team")
         print("2. stats by position")
-        print("3. Back to main menu")
+        print("3. stats percentage by position")
+        print("4. Back to main menu")
         option = input("Enter option #: ")
         match option:
             case "1":
@@ -267,10 +268,38 @@ def graphs_menu_user(cursor):
                 df["fouls"] = df["fouls"].astype(int)
                 df["minutes"] = df["minutes"].astype(int)
                 fig = pyplot.figure(figsize=(20, 15))
-                df.plot.barh(stacked=True, y="position_name", ax=fig.add_subplot(111))
+                df.plot.barh(stacked=True, x="position_name", ax=fig.add_subplot(111))
+                pyplot.ylabel("Position")
                 pyplot.title("Position by Stats")
                 pyplot.show()
             case "3":
+                cursor.callproc('get_pos_stats_pct')
+                df = pandas.DataFrame(cursor.fetchall(), columns=[
+                    "position_name",
+                    "points",
+                    "assists",
+                    "rebounds",
+                    "steals",
+                    "blocks",
+                    "turnovers",
+                    "fouls",
+                    "minutes_played"
+                ])
+                df["points"] = df["points"].astype(int)
+                df["assists"] = df["assists"].astype(int)
+                df["rebounds"] = df["rebounds"].astype(int)
+                df["steals"] = df["steals"].astype(int)
+                df["blocks"] = df["blocks"].astype(int)
+                df["turnovers"] = df["turnovers"].astype(int)
+                df["fouls"] = df["fouls"].astype(int)
+                df["minutes_played"] = df["minutes_played"].astype(int)
+                pct = df.groupby('position_name').sum().apply(lambda x: x / x.sum(), axis=1)
+                for position_name in df['position_name'].unique():
+                    pyplot.figure()
+                    pyplot.pie(pct.loc[position_name], labels=pct.columns, autopct='%1.1f%%')
+                    pyplot.title(position_name)
+                    pyplot.show()
+            case "4":
                 break
             case _:
                 print("\nInvalid option\n")
