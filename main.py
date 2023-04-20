@@ -13,7 +13,6 @@ def create_connection():
     :return: The connection object
     """
     load_dotenv()
-
     DB_HOST = os.getenv('DB_HOST') if os.getenv('DB_HOST') is not None else input(
         "Enter MySQL hostname: ")
     DB_USER = os.getenv('DB_USER') if os.getenv('DB_USER') is not None else input(
