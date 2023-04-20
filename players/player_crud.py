@@ -9,132 +9,132 @@ def add_player(cursor):
     :param cursor:
     :return:
     """
-    while True:
-        try:
-            print("Please enter the player's information")
-            first_name = input("First name: ").capitalize()
-            last_name = input("Last name: ").capitalize()
+    try:
+        print("Please enter the player's information")
+        first_name = input("First name: ").capitalize()
+        last_name = input("Last name: ").capitalize()
 
-            print("Please enter the player's birth date")
+        print("Please enter the player's birth date")
+        day = input("Day: ")
+        month = input("Month: ")
+        year = input("Year: ")
+        while (not day.isdigit() or not month.isdigit() or not year.isdigit()
+               or int(day) < 1 or int(day) > 31
+               or int(month) < 1 or int(month) > 12
+               or int(year) < 1900 or int(year) > 2021):
+            print("Invalid date")
             day = input("Day: ")
             month = input("Month: ")
             year = input("Year: ")
-            while (not day.isdigit() or not month.isdigit() or not year.isdigit()
-                   or int(day) < 1 or int(day) > 31
-                   or int(month) < 1 or int(month) > 12
-                   or int(year) < 1900 or int(year) > 2021):
-                print("Invalid date")
-                day = input("Day: ")
-                month = input("Month: ")
-                year = input("Year: ")
 
-            birth_date = year + "-" + month + "-" + day
+        birth_date = year + "-" + month + "-" + day
 
-            print("Please enter the player's height")
+        print("Please enter the player's height")
+        feet = input("Feet: ")
+        inches = input("Inches: ")
+        while (not feet.isdigit() or not inches.isdigit()) or (
+                int(feet) < 0 or int(inches) < 0 or int(inches) > 11):
+            print("Invalid height")
             feet = input("Feet: ")
             inches = input("Inches: ")
-            while (not feet.isdigit() or not inches.isdigit()) or (
-                    int(feet) < 0 or int(inches) < 0 or int(inches) > 11):
-                print("Invalid height")
-                feet = input("Feet: ")
-                inches = input("Inches: ")
-            height = float(feet) + (float(inches) / 100)
+        height = float(feet) + (float(inches) / 100)
 
-            cursor.callproc('get_positions')
-            result = cursor.fetchall()
-            print("Positions:")
-            for i in range(len(result)):
-                print("ID: %i | Position Name: %s" %
-                      (result[i]['position_id'],
-                       result[i]['position_name']))
+        cursor.callproc('get_positions')
+        result = cursor.fetchall()
+        print("Positions:")
+        for i in range(len(result)):
+            print("ID: %i | Position Name: %s" %
+                  (result[i]['position_id'],
+                   result[i]['position_name']))
 
+        position = input("Select a position #: ")
+        while (not position.isdigit()) or (
+                int(position) < 0 or int(position) > len(result)):
+            print("Invalid position")
             position = input("Select a position #: ")
-            while (not position.isdigit()) or (
-                    int(position) < 0 or int(position) > len(result)):
-                print("Invalid position")
-                position = input("Select a position #: ")
 
+        jersey_number = input("Jersey number: ")
+        while not jersey_number.isdigit() or int(jersey_number) < 0:
+            print("Invalid jersey number")
             jersey_number = input("Jersey number: ")
-            while not jersey_number.isdigit() or int(jersey_number) < 0:
-                print("Invalid jersey number")
-                jersey_number = input("Jersey number: ")
 
+        is_active = input("Is active? (1/0): ")
+        while is_active != "1" and is_active != "0":
+            print("Invalid input")
             is_active = input("Is active? (1/0): ")
-            while is_active != "1" and is_active != "0":
-                print("Invalid input")
-                is_active = input("Is active? (1/0): ")
 
+        season_exp = input("Season experience: ")
+        while not season_exp.isdigit() or int(season_exp) < 0:
+            print("Invalid season experience")
             season_exp = input("Season experience: ")
-            while not season_exp.isdigit() or int(season_exp) < 0:
-                print("Invalid season experience")
-                season_exp = input("Season experience: ")
 
-            cursor.callproc('get_teams')
-            result = cursor.fetchall()
-            all_team_ids = [result[i]['team_id'] for i in range(len(result))]
-            print("Teams:")
-            for i in range(len(result)):
-                print("ID: %i | Team Name: %s" %
-                      (result[i]['team_id'],
-                       result[i]['team_name']))
+        cursor.callproc('get_teams')
+        result = cursor.fetchall()
+        all_team_ids = [result[i]['team_id'] for i in range(len(result))]
+        print("Teams:")
+        for i in range(len(result)):
+            print("ID: %i | Team Name: %s" %
+                  (result[i]['team_id'],
+                   result[i]['team_name']))
 
-            team_id = input("Enter a team ID: ")
-            while (not team_id.isdigit()) or (int(team_id) not in all_team_ids):
-                print("Invalid team")
-                team_id = input("Select a team #: ")
+        team_id = input("Enter a team ID: ")
+        while (not team_id.isdigit()) or (int(team_id) not in all_team_ids):
+            print("Invalid team")
+            team_id = input("Select a team #: ")
 
-            earliest_year = 1945
-            season_year = input("Season year the player played on Team ID %s (ex. 2023): "
-                                % team_id)
-            while not season_year.isdigit() or int(season_year) < earliest_year \
-                    or int(season_year) > date.today().year:
-                print("Invalid season year")
-                season_year = input("Season year the player played: ")
+        earliest_year = 1945
+        season_year = input("Season year the player played on Team ID %s (ex. 2023): "
+                            % team_id)
+        while not season_year.isdigit() or int(season_year) < earliest_year \
+                or int(season_year) > date.today().year:
+            print("Invalid season year")
+            season_year = input("Season year the player played: ")
 
-            print("Do you want to add Player:"
-                  "\nFirst name: %s"
-                  "\nLast name: %s"
-                  "\nBirth date: %s"
-                  "\nHeight: %s"
-                  "\nPosition: %s"
-                  "\nJersey number: %s"
-                  "\nIs active: %s"
-                  "\nSeason experience: %s"
-                  "\nTeam ID: %s"
-                  "\nSeason year: %s" % (first_name,
-                                         last_name,
-                                         birth_date,
-                                         height,
-                                         position,
-                                         jersey_number,
-                                         is_active,
-                                         season_exp,
-                                         team_id,
-                                         season_year))
+        print("Do you want to add Player:"
+              "\nFirst name: %s"
+              "\nLast name: %s"
+              "\nBirth date: %s"
+              "\nHeight: %s"
+              "\nPosition: %s"
+              "\nJersey number: %s"
+              "\nIs active: %s"
+              "\nSeason experience: %s"
+              "\nTeam ID: %s"
+              "\nSeason year: %s" % (first_name,
+                                     last_name,
+                                     birth_date,
+                                     height,
+                                     position,
+                                     jersey_number,
+                                     is_active,
+                                     season_exp,
+                                     team_id,
+                                     season_year))
 
+        add_player_confirmation = input("Add player? (Y/N): ").upper()
+        while add_player_confirmation != "Y" and add_player_confirmation != "N":
+            print("Invalid input")
             add_player_confirmation = input("Add player? (Y/N): ").upper()
-            while add_player_confirmation != "Y" and add_player_confirmation != "N":
-                print("Invalid input")
-                add_player_confirmation = input("Add player? (Y/N): ").upper()
-            if add_player_confirmation == "N":
-                print("Player not added\n")
-                return
-
-            cursor.callproc('create_player',
-                            (first_name,
-                             last_name,
-                             birth_date,
-                             height,
-                             position,
-                             jersey_number,
-                             is_active,
-                             season_exp,
-                             team_id,
-                             season_year))
-            print("Player %s %s added\n" % (first_name, last_name))
+        if add_player_confirmation == "N":
+            print("Player not added\n")
             return
-        except pymysql.Error as e:
-            print("Error %d: %s" % (e.args[0], e.args[1]))
+
+        cursor.callproc('create_player',
+                        (first_name,
+                         last_name,
+                         birth_date,
+                         height,
+                         position,
+                         jersey_number,
+                         is_active,
+                         season_exp,
+                         team_id,
+                         season_year))
+        print("Player %s %s added\n" % (first_name, last_name))
+        return
+    except pymysql.Error as e:
+        print("Error %d: %s" % (e.args[0], e.args[1]))
+        return
 
 
 def view_player(cursor):
@@ -143,40 +143,38 @@ def view_player(cursor):
     :param cursor:
     :return:
     """
-    while True:
-        try:
-            player_id = input("Enter a Player ID (q to quit): ")
-            if player_id.lower() == "q":
-                break
-            cursor.callproc('view_player_by_id', (player_id,))
-            result = cursor.fetchone()
-            if result is not None:
-                print("ID: %s | "
-                      "Name: %s %s | "
-                      "Birth date: %s | "
-                      "Height: %s | "
-                      "Position: %s | "
-                      "Jersey number: %s | "
-                      "Is active: %s | "
-                      "Season experience: %s |"
-                      "Team: %s" % (result['player_id'],
-                                    result['first_name'],
-                                    result['last_name'],
-                                    result['birth_date'],
-                                    result['height'],
-                                    result['position_name'],
-                                    result['jersey_number'],
-                                    result['is_active'],
-                                    result['season_exp'],
-                                    result['team_name']))
-                print("\nWould you like to view another player?")
-                view_another_player = input("Y/N: ").upper()
-                if view_another_player == "N":
-                    return
-            else:
-                print("Player not found")
-        except pymysql.Error as e:
-            print("Error %d: %s" % (e.args[0], e.args[1]))
+    try:
+        player_id = input("Enter a Player ID: ")
+        cursor.callproc('view_player_by_id', (player_id,))
+        result = cursor.fetchone()
+        if result is not None:
+            print("ID: %s | "
+                  "Name: %s %s | "
+                  "Birth date: %s | "
+                  "Height: %s | "
+                  "Position: %s | "
+                  "Jersey number: %s | "
+                  "Is active: %s | "
+                  "Season experience: %s |"
+                  "Team: %s" % (result['player_id'],
+                                result['first_name'],
+                                result['last_name'],
+                                result['birth_date'],
+                                result['height'],
+                                result['position_name'],
+                                result['jersey_number'],
+                                result['is_active'],
+                                result['season_exp'],
+                                result['team_name']))
+            print("\nWould you like to view another player?")
+            view_another_player = input("Y/N: ").upper()
+            if view_another_player == "N":
+                return
+        else:
+            print("Player not found")
+    except pymysql.Error as e:
+        print("Error %d: %s" % (e.args[0], e.args[1]))
+    return
 
 
 def update_player(cursor):
@@ -189,7 +187,7 @@ def update_player(cursor):
     player_id = input("Player ID: ")
     cursor.callproc('view_player_by_id', (player_id,))
     player_results = cursor.fetchone()
-    if player_results is not None:
+    if player_results:
         print("Player ID: %s"
               "\nName: %s %s"
               "\nBirth date: %s"

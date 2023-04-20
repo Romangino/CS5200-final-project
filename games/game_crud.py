@@ -110,7 +110,7 @@ def update_game(cursor):
     """
     print("\nUpdate Game")
     try:
-        game_id = input("Enter game ID: ")
+        game_id = input("Enter game ID to update: ")
         cursor.callproc("view_game_by_id", (game_id,))
         game_result = cursor.fetchone()
         if game_result:
@@ -127,7 +127,7 @@ def update_game(cursor):
                                        game_result['team2_pts'],
                                        game_result['winner_id'],
                                        game_result['game_date']))
-            game_update_confirm = input("Update game? (Y/N): ").upper()
+            game_update_confirm = input("Update this game? (Y/N): ").upper()
             if game_update_confirm == "Y":
                 cursor.callproc("get_teams")
                 team_result = cursor.fetchall()
@@ -138,13 +138,15 @@ def update_game(cursor):
                 away_team_id = input("Enter new away team ID: ") or game_result['team2_id']
                 home_team_pts = input("Enter new home team points: ") or game_result['team1_pts']
                 away_team_pts = input("Enter new away team points: ") or game_result['team2_pts']
+
                 if home_team_pts == away_team_pts:
                     winner_id = -1
                 elif home_team_pts > away_team_pts:
                     winner_id = home_team_id
                 else:
                     winner_id = away_team_id
-                game_date = input("Enter new game date (YYYY-MM-DD): ")
+
+                game_date = input("Enter new game date (YYYY-MM-DD): ") or game_result['game_date']
 
                 cursor.callproc("update_game",
                                 (game_id,
