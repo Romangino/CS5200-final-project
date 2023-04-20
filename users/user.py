@@ -227,16 +227,53 @@ def games_menu_user(cursor):
 
 
 def graphs_menu_user(cursor):
-    cursor.callproc('get_teams_tot_pts')
-    df = pandas.DataFrame(cursor.fetchall(), columns=["team_name", "tot_pts"])
-    df["tot_pts"] = df["tot_pts"].astype(int)
-    fig = pyplot.figure(figsize=(20, 20))
-    plot = df.plot(kind='bar', x='team_name', y='tot_pts', width=0.5, ax=fig.add_subplot(111))
-    plot.tick_params(axis='x', labelsize=10, rotation=90)
-    plot.set_xlabel("Team")
-    plot.set_ylabel("Points")
-    pyplot.title("Total Points Per Team")
-    pyplot.show()
+    while True:
+        print("What would you like to view?")
+        print("1. total points per team")
+        print("2. stats by position")
+        print("3. Back to main menu")
+        option = input("Enter option #: ")
+        match option:
+            case "1":
+                cursor.callproc('get_teams_tot_pts')
+                df = pandas.DataFrame(cursor.fetchall(), columns=["team_name", "tot_pts"])
+                df["tot_pts"] = df["tot_pts"].astype(int)
+                fig = pyplot.figure(figsize=(20, 20))
+                plot = df.plot(kind='bar', x='team_name', y='tot_pts', width=0.5, ax=fig.add_subplot(111))
+                plot.tick_params(axis='x', labelsize=10, rotation=90)
+                plot.set_xlabel("Team")
+                plot.set_ylabel("Points")
+                pyplot.title("Total Points Per Team")
+                pyplot.show()
+            case "2":
+                cursor.callproc('get_pos_stats')
+                df = pandas.DataFrame(cursor.fetchall(), columns=[
+                    "position_name",
+                    "points",
+                    "assists",
+                    "rebounds",
+                    "steals",
+                    "blocks",
+                    "turnovers",
+                    "fouls",
+                    "minutes"
+                ])
+                df["points"] = df["points"].astype(int)
+                df["assists"] = df["assists"].astype(int)
+                df["rebounds"] = df["rebounds"].astype(int)
+                df["steals"] = df["steals"].astype(int)
+                df["blocks"] = df["blocks"].astype(int)
+                df["turnovers"] = df["turnovers"].astype(int)
+                df["fouls"] = df["fouls"].astype(int)
+                df["minutes"] = df["minutes"].astype(int)
+                fig = pyplot.figure(figsize=(20, 15))
+                df.plot.barh(stacked=True, y="position_name", ax=fig.add_subplot(111))
+                pyplot.title("Position by Stats")
+                pyplot.show()
+            case "3":
+                break
+            case _:
+                print("\nInvalid option\n")
 
 
 def menu(cursor):
@@ -250,7 +287,7 @@ def menu(cursor):
         print("1. Players")
         print("2. Teams")
         print("3. Games")
-        print("4. graphs")
+        print("4. Graphs")
         print("5. Exit")
         option = input("Enter option #: ")
         match option:
