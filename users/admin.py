@@ -129,7 +129,7 @@ def update_database(cursor):
 
     update_confirmation = input(
         "Do you want to import any new player stats from API? This will take a few minutes to "
-        "complete and API maybe get rate limited. (Y/N): ").upper()
+        "complete and API may be rate limited. (Y/N): ").upper()
     if update_confirmation == "Y":
         # Add player stats for games that are not in the database
         try:
