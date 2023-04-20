@@ -138,12 +138,14 @@ def update_game(cursor):
                 away_team_id = input("Enter new away team ID: ") or game_result['team2_id']
                 home_team_pts = input("Enter new home team points: ") or game_result['team1_pts']
                 away_team_pts = input("Enter new away team points: ") or game_result['team2_pts']
+
                 if home_team_pts == away_team_pts:
                     winner_id = -1
                 elif home_team_pts > away_team_pts:
                     winner_id = home_team_id
                 else:
                     winner_id = away_team_id
+
                 game_date = input("Enter new game date (YYYY-MM-DD): ") or game_result['game_date']
 
                 cursor.callproc("update_game",

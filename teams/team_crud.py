@@ -102,7 +102,8 @@ def update_team(cursor):
                                           team_result['year_founded']))
 
             team_name = input("Enter team name: ").title() or team_result['team_name']
-            abbreviation = input("Enter team abbreviation (3 letters): ").upper() or team_result['abbreviation']
+            abbreviation = input("Enter team abbreviation (3 letters): ").upper() or team_result[
+                'abbreviation']
             nickname = input("Enter team nickname: ").title or team_result['nickname']
             city = input("Enter team city: ").title() or team_result['city']
             state = input("Enter team state: ").title() or team_result['state']
@@ -167,7 +168,8 @@ def delete_team(cursor):
                                           team_result['state'],
                                           team_result['year_founded']))
 
-            team_delete_confirm = input("Are you sure you want to delete this team? (Y/N): ").upper()
+            team_delete_confirm = input(
+                "Are you sure you want to delete this team? (Y/N): ").upper()
             if team_delete_confirm == "Y":
                 cursor.callproc("delete_team", (team_id,))
                 print("Team deleted successfully!")

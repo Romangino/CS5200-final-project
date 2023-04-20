@@ -1,10 +1,11 @@
+USE project_testdb;
 # Create a new player
 DROP PROCEDURE IF EXISTS create_player;
 CREATE PROCEDURE create_player(
     IN first_name_p VARCHAR(50),
     IN last_name_p VARCHAR(50),
     IN birth_date_p DATE,
-    IN height_p DECIMAL(4,2)
+    IN height_p DECIMAL(4, 2),
     IN position_p VARCHAR(255),
     IN jersey_number_p INT,
     IN is_active_p BOOLEAN,
@@ -14,11 +15,20 @@ CREATE PROCEDURE create_player(
 BEGIN
     # Create variable to hold player_id_p
     DECLARE player_id_p INT;
+    SET player_id_p = 1;
+
+    # Handle Team ID not found
+    IF team_id_p NOT IN (SELECT team_id FROM teams) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Team ID not found.';
+    END IF;
 
     # Find the max player_id plus one
-    SELECT MAX(player_id) + 1
-    INTO player_id_p
-    FROM players;
+    WHILE player_id_p IN (SELECT player_id FROM players)
+        DO
+            SET player_id_p = player_id_p + 1;
+
+        END WHILE;
 
     # Insert into player table
     INSERT INTO players (player_id,
@@ -53,16 +63,59 @@ BEGIN
             season_year_p);
 END;
 
+# Create a new player api
+DROP PROCEDURE IF EXISTS create_player_api;
+CREATE PROCEDURE create_player_api(
+    IN player_id_p INT,
+    IN first_name_p VARCHAR(50),
+    IN last_name_p VARCHAR(50),
+    IN birth_date_p DATE,
+    IN height_p DECIMAL(4, 2),
+    IN position_p VARCHAR(255),
+    IN jersey_number_p INT,
+    IN is_active_p BOOLEAN,
+    IN season_exp_p INT,
+    IN team_id_p INT,
+    IN season_year_p INT)
+BEGIN
+    # Handle Team ID not found
+    IF team_id_p NOT IN (SELECT team_id FROM teams) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Team ID not found.';
+    END IF;
 
-# View player by name procedure
-# DROP PROCEDURE IF EXISTS view_player_by_name;
-# CREATE PROCEDURE view_player_by_name(IN first_name_p VARCHAR(255), IN last_name_p VARCHAR(255))
-# BEGIN
-#     SELECT *
-#     FROM players
-#     WHERE first_name = first_name_p
-#       AND last_name = last_name_p;
-# END;
+    # Insert into player table
+    INSERT INTO players (player_id,
+                         first_name,
+                         last_name,
+                         birth_date,
+                         height,
+                         jersey_number,
+                         is_active,
+                         season_exp)
+    VALUES (player_id_p,
+            first_name_p,
+            last_name_p,
+            birth_date_p,
+            height_p,
+            jersey_number_p,
+            is_active_p,
+            season_exp_p);
+
+    # Insert into player_position_link table
+    INSERT INTO player_position_link (player_id,
+                                      position_id)
+    VALUES (player_id_p,
+            position_p);
+
+    # Insert into player_team_link table
+    INSERT INTO player_team_link (player_id,
+                                  team_id,
+                                  season_year)
+    VALUES (player_id_p,
+            team_id_p,
+            season_year_p);
+END;
 
 # View player by id procedure
 DROP PROCEDURE IF EXISTS view_player_by_id;
@@ -88,7 +141,7 @@ CREATE PROCEDURE update_player(
     IN first_name_p VARCHAR(50),
     IN last_name_p VARCHAR(50),
     IN birth_date_p DATE,
-    IN height_p DECIMAL(4,2),
+    IN height_p DECIMAL(4, 2),
     IN position_p VARCHAR(255),
     IN jersey_number_p INT,
     IN is_active_p BOOLEAN,
@@ -98,13 +151,13 @@ CREATE PROCEDURE update_player(
 BEGIN
     # Update player table
     UPDATE players
-    SET first_name = first_name_p,
-        last_name = last_name_p,
-        birth_date = birth_date_p,
-        height = height_p,
+    SET first_name    = first_name_p,
+        last_name     = last_name_p,
+        birth_date    = birth_date_p,
+        height        = height_p,
         jersey_number = jersey_number_p,
-        is_active = is_active_p,
-        season_exp = season_exp_p
+        is_active     = is_active_p,
+        season_exp    = season_exp_p
     WHERE player_id = player_id_p;
 
     # Update player_position_link table
@@ -114,7 +167,7 @@ BEGIN
 
     # Update player_team_link table
     UPDATE player_team_link
-    SET team_id = team_id_p,
+    SET team_id     = team_id_p,
         season_year = season_year_p
     WHERE player_id = player_id_p;
 END;
@@ -124,19 +177,30 @@ DROP PROCEDURE IF EXISTS delete_player;
 CREATE PROCEDURE delete_player(IN player_id_p INT)
 BEGIN
     # Delete from player table
-    DELETE FROM players
+    DELETE
+    FROM players
     WHERE player_id = player_id_p;
 
     # Delete from player_position_link table
-    DELETE FROM player_position_link
+    DELETE
+    FROM player_position_link
     WHERE player_id = player_id_p;
 
     # Delete from player_team_link table
-    DELETE FROM player_team_link
+    DELETE
+    FROM player_team_link
     WHERE player_id = player_id_p;
 
     # Delete from player_stats table
-    DELETE FROM player_game_stats
+    DELETE
+    FROM player_game_stats
     WHERE player_id = player_id_p;
 END;
 
+# Get all players procedure
+DROP PROCEDURE IF EXISTS get_players;
+CREATE PROCEDURE get_players()
+BEGIN
+    SELECT *
+    FROM players;
+END;
