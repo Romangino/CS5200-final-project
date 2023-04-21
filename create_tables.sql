@@ -1,10 +1,10 @@
-DROP DATABASE IF EXISTS project_testdb;
-CREATE DATABASE project_testdb;
+DROP DATABASE IF EXISTS nba_db;
+CREATE DATABASE nba_db;
 
-USE project_testdb;
+USE nba_db;
 
-# Create a nba player table with the following columns:
-# player_id, first_name, last_name, is_active
+-- Create a nba player table with the following columns:
+-- player_id, first_name, last_name, is_active
 DROP TABLE IF EXISTS players;
 CREATE TABLE players
 (
@@ -19,8 +19,8 @@ CREATE TABLE players
     PRIMARY KEY (player_id)
 );
 
-# Create a nba team table with the following columns:
-# team_id, team_name, abbreviation, nickname, city, state, year_founded
+-- Create a nba team table with the following columns:
+-- team_id, team_name, abbreviation, nickname, city, state, year_founded
 DROP TABLE IF EXISTS teams;
 CREATE TABLE teams
 (
@@ -71,7 +71,7 @@ CREATE TABLE player_team_link
         ON UPDATE CASCADE
 );
 
-# Create table for games
+-- Create table for games
 DROP TABLE IF EXISTS games;
 CREATE TABLE games
 (
@@ -120,7 +120,7 @@ CREATE TABLE player_game_stats
         ON UPDATE CASCADE
 );
 
-# Create table for users, passwords, and account types
+-- Create table for users, passwords, and account types
 DROP TABLE IF EXISTS users;
 CREATE TABLE users
 (

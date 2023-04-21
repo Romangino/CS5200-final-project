@@ -1,3 +1,4 @@
+USE nba_db;
 # Create procedure to create a new user
 DROP PROCEDURE IF EXISTS create_user;
 CREATE PROCEDURE create_user(

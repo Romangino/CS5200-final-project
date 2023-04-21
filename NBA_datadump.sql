@@ -246,7 +246,7 @@ CREATE TABLE `users` (
   `password_hash` varchar(60) NOT NULL,
   `admin` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -255,12 +255,63 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (7,'Test','$2a$12$kDWg9UzDlfaVge454RA/ZORabx.gL5XiEbXOTpDJd5cpiDFFhzZT2',0),(8,'Admin','$2a$12$RgGq8e060sAAf5KPxsHHKOmpT20SMQdiBsdwOnfBhqx7NDc0x4p5e',1);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
 -- Dumping routines for database 'nba_db'
 --
+/*!50003 DROP FUNCTION IF EXISTS `get_player_id` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` FUNCTION `get_player_id`(first_name_p VARCHAR(50), last_name_p VARCHAR(50)) RETURNS int
+    READS SQL DATA
+    DETERMINISTIC
+BEGIN
+		DECLARE ret_int INT;
+        SELECT player_id INTO ret_int FROM players
+			WHERE first_name = first_name_p
+            AND last_name = last_name_p;
+        RETURN(ret_int);
+	END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP FUNCTION IF EXISTS `get_team_id` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` FUNCTION `get_team_id`(city_p VARCHAR(50), name_p VARCHAR(50)) RETURNS int
+    READS SQL DATA
+    DETERMINISTIC
+BEGIN
+		DECLARE ret_int INT;
+        SELECT team_id INTO ret_int FROM teams
+			WHERE city = city_p
+            AND nickname = name_p;
+        RETURN(ret_int);
+	END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `check_username` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -271,7 +322,7 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `check_username`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `check_username`(
     IN username_p VARCHAR(50)
 )
 BEGIN
@@ -292,36 +343,26 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `create_game`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_game`(
+    IN game_id_p INT,
+    IN game_date_p DATE,
     IN team1_id_p INT,
     IN team2_id_p INT,
     IN team1_pts_p INT,
     IN team2_pts_p INT,
-    IN game_date_p DATE,
-    IN winner_id_p INT)
+    IN winner_id_p INT
+)
 BEGIN
-    DECLARE game_id_p INT;
+    # Create a handler for error 1452
+    DECLARE EXIT HANDLER FOR 1452
+        BEGIN
+            # Rollback the transaction
+            ROLLBACK;
+        END;
 
-    # Create game_id with the max game_id + 1
-    SELECT MIN(game_id) + 1
-    INTO game_id_p
-    FROM games;
-
-
-    INSERT INTO games (game_id,
-                       team1_id,
-                       team2_id,
-                       team1_pts,
-                       team2_pts,
-                       game_date,
-                       winner_id)
-    VALUES (game_id_p,
-            team1_id_p,
-            team2_id_p,
-            team1_pts_p,
-            team2_pts_p,
-            game_date_p,
-            winner_id_p);
+    # Insert the game into the games table
+    INSERT INTO games (game_id, game_date, team1_id, team2_id, team1_pts, team2_pts, winner_id)
+    VALUES (game_id_p, game_date_p, team1_id_p, team2_id_p, team1_pts_p, team2_pts_p, winner_id_p);
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -338,7 +379,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `create_game_api`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_game_api`(
     IN game_id_p INT,
     IN team1_id_p INT,
     IN team2_id_p INT,
@@ -377,7 +418,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `create_nba_player`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_nba_player`(
     IN player_id_p INT,
     IN first_name_p VARCHAR(50),
     IN last_name_p VARCHAR(50),
@@ -413,8 +454,8 @@ BEGIN
     END IF;
 
     # Insert the player into the nba_players table
-    INSERT INTO nba_players (player_id, first_name, last_name, birth_date, height, jersey_number,
-                             is_active, season_exp)
+    INSERT INTO players (player_id, first_name, last_name, birth_date, height, jersey_number,
+                         is_active, season_exp)
     VALUES (player_id_p, first_name_p, last_name_p, birth_date_p, height_p, jersey_number_p,
             is_active_p, season_exp_p);
 
@@ -442,18 +483,18 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `create_nba_team`(
-    IN team_id INT,
-    IN team_name VARCHAR(50),
-    IN abbreviation VARCHAR(3),
-    IN nickname VARCHAR(50),
-    IN city VARCHAR(50),
-    IN state VARCHAR(50),
-    IN year_founded INT
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_nba_team`(
+    IN team_id_p INT,
+    IN team_name_p VARCHAR(50),
+    IN abbreviation_p VARCHAR(3),
+    IN nickname_p VARCHAR(50),
+    IN city_p VARCHAR(50),
+    IN state_p VARCHAR(50),
+    IN year_founded_p INT
 )
 BEGIN
-    INSERT INTO nba_teams (team_id, team_name, abbreviation, nickname, city, state, year_founded)
-    VALUES (team_id, team_name, abbreviation, nickname, city, state, year_founded);
+    INSERT INTO teams (team_id, team_name, abbreviation, nickname, city, state, year_founded)
+    VALUES (team_id_p, team_name_p, abbreviation_p, nickname_p, city_p, state_p, year_founded_p);
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -470,11 +511,11 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `create_player`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_player`(
     IN first_name_p VARCHAR(50),
     IN last_name_p VARCHAR(50),
     IN birth_date_p DATE,
-    IN height_p DECIMAL(4,2),
+    IN height_p DECIMAL(4, 2),
     IN position_p VARCHAR(255),
     IN jersey_number_p INT,
     IN is_active_p BOOLEAN,
@@ -489,15 +530,15 @@ BEGIN
     # Handle Team ID not found
     IF team_id_p NOT IN (SELECT team_id FROM teams) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Team ID not found.';
+            SET MESSAGE_TEXT = 'Team ID not found.';
     END IF;
 
     # Find the max player_id plus one
     WHILE player_id_p IN (SELECT player_id FROM players)
-    DO
-        SET player_id_p = player_id_p + 1;
+        DO
+            SET player_id_p = player_id_p + 1;
 
-    END WHILE;
+        END WHILE;
 
     # Insert into player table
     INSERT INTO players (player_id,
@@ -546,12 +587,12 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `create_player_api`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_player_api`(
     IN player_id_p INT,
     IN first_name_p VARCHAR(50),
     IN last_name_p VARCHAR(50),
     IN birth_date_p DATE,
-    IN height_p DECIMAL(4,2),
+    IN height_p DECIMAL(4, 2),
     IN position_p VARCHAR(255),
     IN jersey_number_p INT,
     IN is_active_p BOOLEAN,
@@ -559,6 +600,12 @@ CREATE DEFINER=`root`@`%` PROCEDURE `create_player_api`(
     IN team_id_p INT,
     IN season_year_p INT)
 BEGIN
+    # Handle Team ID not found
+    IF team_id_p NOT IN (SELECT team_id FROM teams) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Team ID not found.';
+    END IF;
+
     # Insert into player table
     INSERT INTO players (player_id,
                          first_name,
@@ -606,7 +653,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `create_player_game_stats`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_player_game_stats`(
     IN player_id_p INT,
     IN game_id_p INT,
     IN points_p INT,
@@ -634,20 +681,21 @@ BEGIN
     # Handle player_id and game_id being in the player_game_stats table
     IF EXISTS (SELECT *
                FROM player_game_stats
-               WHERE player_id = player_id_p AND game_id = game_id_p) THEN
+               WHERE player_id = player_id_p
+                 AND game_id = game_id_p) THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Player ID and Game ID already exist in player_game_stats table';
     END IF;
 
     # Handle points being less than 0
     IF points_p < 0 OR
-         assists_p < 0 OR
-         rebounds_p < 0 OR
-         steals_p < 0 OR
-         blocks_p < 0 OR
-         turnovers_p < 0 OR
-         fouls_p < 0 OR
-         minutes_played_p < 0
+       assists_p < 0 OR
+       rebounds_p < 0 OR
+       steals_p < 0 OR
+       blocks_p < 0 OR
+       turnovers_p < 0 OR
+       fouls_p < 0 OR
+       minutes_played_p < 0
     THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Values cannot be less than 0';
@@ -689,7 +737,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `create_position`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_position`(
     IN position_name_p VARCHAR(50)
 )
 BEGIN
@@ -711,27 +759,28 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `create_team`(
-IN team_name_p VARCHAR(50),
-IN abbreviation_p VARCHAR(3),
-IN nickname_p VARCHAR(50),
-IN city_p VARCHAR(50),
-IN state_p VARCHAR(50),
-IN year_founded_p INT)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_team`(
+    IN team_name_p VARCHAR(50),
+    IN abbreviation_p VARCHAR(3),
+    IN nickname_p VARCHAR(50),
+    IN city_p VARCHAR(50),
+    IN state_p VARCHAR(50),
+    IN year_founded_p INT)
 BEGIN
     DECLARE team_exists INT;
     DECLARE team_id_p INT;
 
     # Check if team already exists
-    SELECT COUNT(*) INTO team_exists
+    SELECT COUNT(*)
+    INTO team_exists
     FROM teams
     WHERE team_name = team_name_p
-    OR abbreviation = abbreviation_p
-    OR nickname = nickname_p;
+       OR abbreviation = abbreviation_p
+       OR nickname = nickname_p;
 
     IF team_exists > 0 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Team already exists';
+            SET MESSAGE_TEXT = 'Team already exists';
     END IF;
 
     # Find the next team_id
@@ -770,9 +819,9 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `create_user`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_user`(
     IN username_p VARCHAR(50),
-    IN password_p VARCHAR(100),
+    IN password_p VARCHAR(60),
     IN admin_p BOOLEAN
 )
 BEGIN
@@ -798,10 +847,11 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `delete_game`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_game`(
     IN game_id_p INT)
 BEGIN
-    DELETE FROM games
+    DELETE
+    FROM games
     WHERE game_id = game_id_p;
 END ;;
 DELIMITER ;
@@ -819,22 +869,26 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `delete_player`(IN player_id_p INT)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_player`(IN player_id_p INT)
 BEGIN
     # Delete from player table
-    DELETE FROM players
+    DELETE
+    FROM players
     WHERE player_id = player_id_p;
 
     # Delete from player_position_link table
-    DELETE FROM player_position_link
+    DELETE
+    FROM player_position_link
     WHERE player_id = player_id_p;
 
     # Delete from player_team_link table
-    DELETE FROM player_team_link
+    DELETE
+    FROM player_team_link
     WHERE player_id = player_id_p;
 
     # Delete from player_stats table
-    DELETE FROM player_game_stats
+    DELETE
+    FROM player_game_stats
     WHERE player_id = player_id_p;
 END ;;
 DELIMITER ;
@@ -852,10 +906,11 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `delete_team`(
-IN team_id_p INT)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_team`(
+    IN team_id_p INT)
 BEGIN
-    DELETE FROM teams
+    DELETE
+    FROM teams
     WHERE team_id = team_id_p;
 END ;;
 DELIMITER ;
@@ -873,11 +928,104 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `get_games`()
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_games`()
 BEGIN
     SELECT *
     FROM games;
 END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_games_for_player` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_games_for_player`(
+    IN player_id_p INT
+)
+BEGIN
+    SELECT *
+    FROM player_game_stats
+    WHERE player_id = player_id_p;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_highest_scoring_games` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_highest_scoring_games`()
+BEGIN
+		SELECT game_date, t1.team_name AS team1, team1_pts, t2.team_name AS team2, team2_pts, team1_pts + team2_pts AS tot_pts FROM games AS g
+			INNER JOIN teams AS t1 ON g.team1_id = t1.team_id
+			INNER JOIN teams AS t2 ON g.team2_id = t2.team_id
+				ORDER BY tot_pts DESC
+					LIMIT 5;
+	END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_lowest_scoring_games` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_lowest_scoring_games`()
+BEGIN
+		SELECT game_date, t1.team_name AS team1, team1_pts, t2.team_name AS team2, team2_pts, team1_pts + team2_pts AS tot_pts FROM games AS g
+			INNER JOIN teams AS t1 ON g.team1_id = t1.team_id
+			INNER JOIN teams AS t2 ON g.team2_id = t2.team_id
+				ORDER BY tot_pts ASC
+					LIMIT 5;
+	END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_most_recent_games` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_most_recent_games`()
+BEGIN
+		SELECT game_date, t1.team_name AS team1, team1_pts, t2.team_name AS team2, team2_pts, t3.team_name AS winner FROM games AS g
+			INNER JOIN teams AS t1 ON g.team1_id = t1.team_id
+			INNER JOIN teams AS t2 ON g.team2_id = t2.team_id
+			INNER JOIN teams AS t3 ON g.winner_id = t3.team_id
+				ORDER BY game_date DESC
+					LIMIT 5;
+	END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -893,7 +1041,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `get_password_hash`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_password_hash`(
     IN username_p VARCHAR(50)
 )
 BEGIN
@@ -914,11 +1062,58 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `get_players`()
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_players`()
 BEGIN
     SELECT *
     FROM players;
 END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_player_info` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_player_info`(player_id_p INT)
+BEGIN
+		SELECT first_name, last_name, team_name, position_name, birth_date, height, jersey_number, is_active, season_exp FROM players
+			NATURAL JOIN player_team_link
+            NATURAL JOIN teams
+			NATURAL JOIN player_position_link
+            NATURAL JOIN positions
+				WHERE player_id = player_id_p;
+	END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_player_stats` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_player_stats`(player_id_p INT)
+BEGIN
+		SELECT ROUND(AVG(points), 1) AS avg_ppg, ROUND(AVG(assists), 1) AS avg_apg, ROUND(AVG(rebounds), 1) AS avg_rpg, 
+        ROUND(AVG(steals), 1) AS avg_spg, ROUND(AVG(blocks), 1) AS avg_bpg, ROUND(AVG(turnovers), 1) AS avg_tpg, 
+        ROUND(AVG(fouls), 1) AS avg_fpg, ROUND(AVG(minutes_played), 1) AS avg_mpg FROM player_game_stats
+        NATURAL JOIN games
+			WHERE player_id = player_id_p;
+	END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -934,11 +1129,56 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `get_positions`()
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_positions`()
 BEGIN
     SELECT *
     FROM positions;
 END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_pos_stats` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_pos_stats`()
+BEGIN
+		SELECT position_name, SUM(points) AS points, SUM(assists) AS assists, SUM(rebounds) AS rebounds, 
+		SUM(steals) AS steals, SUM(blocks) AS blocks, SUM(turnovers) AS turnovers, 
+		SUM(fouls) AS fouls, SUM(minutes_played) AS minutes FROM positions AS p
+			INNER JOIN player_position_link AS ppl ON p.position_id = ppl.position_id
+			INNER JOIN player_game_stats AS pgs ON ppl.player_id = pgs.player_id
+				GROUP BY position_name;
+	END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_pos_stats_pct` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_pos_stats_pct`()
+BEGIN
+		SELECT position_name, points, assists, rebounds, steals, blocks, turnovers, fouls, minutes_played FROM positions AS p
+			INNER JOIN player_position_link AS ppl ON p.position_id = ppl.position_id
+			INNER JOIN player_game_stats AS pgs ON ppl.player_id = pgs.player_id;
+	END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -954,13 +1194,15 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `get_stat`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_stat`(
     IN player_id_p INT,
     IN game_id_p INT
 )
 BEGIN
-    SELECT * FROM player_game_stats
-    WHERE player_id = player_id_p AND game_id = game_id_p;
+    SELECT *
+    FROM player_game_stats
+    WHERE player_id = player_id_p
+      AND game_id = game_id_p;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -977,7 +1219,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `get_stats`()
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_stats`()
 BEGIN
     SELECT *
     FROM player_game_stats;
@@ -997,11 +1239,108 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `get_teams`()
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_teams`()
 BEGIN
     SELECT *
     FROM teams;
 END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_teams_tot_pts` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_teams_tot_pts`()
+BEGIN
+		SELECT tot1.team_name, home_team_pts + away_team_pts AS tot_pts FROM (
+			SELECT team_name, SUM(team1_pts) AS home_team_pts FROM teams AS t1
+				INNER JOIN games AS g1 ON t1.team_id = g1.team1_id
+					GROUP BY team_name
+		) AS tot1
+			INNER JOIN (
+				SELECT team_name, SUM(team2_pts) AS away_team_pts FROM teams AS t2
+					INNER JOIN games AS g2 ON t2.team_id = g2.team2_id
+						GROUP BY team_name
+				) AS tot2 ON tot1.team_name = tot2.team_name
+					GROUP BY team_name;
+	END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_team_info` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_team_info`(team_id_p INT)
+BEGIN
+		DECLARE wins INT;
+        DECLARE losses INT;
+        
+		SELECT COUNT(*) INTO wins FROM games AS g
+		INNER JOIN teams AS t ON t.team_id = g.winner_id
+			WHERE t.team_id = team_id_p
+				GROUP BY winner_id;
+		
+        SELECT COUNT(*) INTO losses FROM games AS g
+		INNER JOIN teams AS t ON t.team_id = g.team1_id
+		OR t.team_id = g.team2_id
+			WHERE t.team_id != g.winner_id
+            AND t.team_id = team_id_p
+				GROUP BY team_name;
+		
+		SELECT team_name, abbreviation, state, year_founded, wins, losses FROM teams
+			WHERE team_id = team_id_p;
+	END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `get_team_stats` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_team_stats`(team_id_p INT)
+BEGIN
+		DECLARE partial_total1 INT;
+        DECLARE partial_total2 INT;
+        DECLARE total_games INT;
+        
+		SELECT SUM(team1_pts) INTO partial_total1 FROM games
+			WHERE team1_id = team_id_p;
+		
+        SELECT SUM(team2_pts) INTO partial_total2 FROM games
+			WHERE team2_id = team_id_p;
+		
+        SELECT COUNT(*) INTO total_games FROM games
+			WHERE team1_id = team_id_p
+            OR team2_id = team_id_p;
+            
+		SELECT ROUND((partial_total1 + partial_total2) / total_games, 1) AS avg_ppg;
+	END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1017,7 +1356,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `get_user`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_user`(
     IN username_p VARCHAR(50)
 )
 BEGIN
@@ -1038,7 +1377,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `update_game`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_game`(
     IN game_id_p INT,
     IN team1_id_p INT,
     IN team2_id_p INT,
@@ -1048,8 +1387,8 @@ CREATE DEFINER=`root`@`%` PROCEDURE `update_game`(
     IN winner_id_p INT)
 BEGIN
     UPDATE games
-    SET team1_id = team1_id_p,
-        team2_id = team2_id_p,
+    SET team1_id  = team1_id_p,
+        team2_id  = team2_id_p,
         team1_pts = team1_pts_p,
         team2_pts = team2_pts_p,
         game_date = game_date_p,
@@ -1071,12 +1410,12 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `update_player`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_player`(
     IN player_id_p INT,
     IN first_name_p VARCHAR(50),
     IN last_name_p VARCHAR(50),
     IN birth_date_p DATE,
-    IN height_p DECIMAL(4,2),
+    IN height_p DECIMAL(4, 2),
     IN position_p VARCHAR(255),
     IN jersey_number_p INT,
     IN is_active_p BOOLEAN,
@@ -1086,13 +1425,13 @@ CREATE DEFINER=`root`@`%` PROCEDURE `update_player`(
 BEGIN
     # Update player table
     UPDATE players
-    SET first_name = first_name_p,
-        last_name = last_name_p,
-        birth_date = birth_date_p,
-        height = height_p,
+    SET first_name    = first_name_p,
+        last_name     = last_name_p,
+        birth_date    = birth_date_p,
+        height        = height_p,
         jersey_number = jersey_number_p,
-        is_active = is_active_p,
-        season_exp = season_exp_p
+        is_active     = is_active_p,
+        season_exp    = season_exp_p
     WHERE player_id = player_id_p;
 
     # Update player_position_link table
@@ -1102,7 +1441,7 @@ BEGIN
 
     # Update player_team_link table
     UPDATE player_team_link
-    SET team_id = team_id_p,
+    SET team_id     = team_id_p,
         season_year = season_year_p
     WHERE player_id = player_id_p;
 END ;;
@@ -1121,21 +1460,21 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `update_team`(
-IN team_id_p INT,
-IN team_name_p VARCHAR(50),
-IN abbreviation_p VARCHAR(3),
-IN nickname_p VARCHAR(50),
-IN city_p VARCHAR(50),
-IN state_p VARCHAR(50),
-IN year_founded_p INT)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_team`(
+    IN team_id_p INT,
+    IN team_name_p VARCHAR(50),
+    IN abbreviation_p VARCHAR(3),
+    IN nickname_p VARCHAR(50),
+    IN city_p VARCHAR(50),
+    IN state_p VARCHAR(50),
+    IN year_founded_p INT)
 BEGIN
     UPDATE teams
-    SET team_name = team_name_p,
+    SET team_name    = team_name_p,
         abbreviation = abbreviation_p,
-        nickname = nickname_p,
-        city = city_p,
-        state = state_p,
+        nickname     = nickname_p,
+        city         = city_p,
+        state        = state_p,
         year_founded = year_founded_p
     WHERE team_id = team_id_p;
 END ;;
@@ -1154,7 +1493,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `view_game_by_id`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `view_game_by_id`(
     IN game_id_p INT)
 BEGIN
     SELECT *
@@ -1176,7 +1515,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `view_player_by_id`(IN player_id_p INT)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `view_player_by_id`(IN player_id_p INT)
 BEGIN
     SELECT *
     FROM players,
@@ -1205,8 +1544,8 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `view_team_by_id`(
-IN team_id_p INT)
+CREATE DEFINER=`root`@`localhost` PROCEDURE `view_team_by_id`(
+    IN team_id_p INT)
 BEGIN
     SELECT *
     FROM teams
@@ -1227,4 +1566,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-04-20 13:33:08
+-- Dump completed on 2023-04-21 10:39:32
