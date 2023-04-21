@@ -1,4 +1,4 @@
-USE project_testdb;
+USE nba_db;
 DROP FUNCTION IF EXISTS get_player_id;
 delimiter $$
 CREATE FUNCTION get_player_id(first_name_p VARCHAR(50), last_name_p VARCHAR(50))

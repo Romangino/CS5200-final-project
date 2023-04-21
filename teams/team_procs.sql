@@ -1,3 +1,4 @@
+USE nba_db;
 # Create a new team in the teams table
 DROP PROCEDURE IF EXISTS create_team;
 CREATE PROCEDURE create_team(

@@ -1,3 +1,4 @@
+USE nba_db;
 # Procedure to create game in games table
 DROP PROCEDURE IF EXISTS create_game;
 CREATE PROCEDURE create_game(
