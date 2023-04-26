@@ -1,4 +1,4 @@
-USE project_testdb;
+USE nba_db;
 
 DROP FUNCTION IF EXISTS get_player_id;
 delimiter $$

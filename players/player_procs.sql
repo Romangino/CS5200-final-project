@@ -1,4 +1,4 @@
-USE project_testdb;
+USE nba_db;
 # Create a new player
 DROP PROCEDURE IF EXISTS create_player;
 CREATE PROCEDURE create_player(

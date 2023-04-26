@@ -1,3 +1,5 @@
+# Used for the initial creation of the database
+USE nba_db;
 # Create nba team with procedure
 DROP PROCEDURE IF EXISTS create_nba_team;
 CREATE PROCEDURE create_nba_team(

@@ -1,3 +1,4 @@
+USE nba_db;
 # Procedure to create a new players stats record in player_game_stats table
 DROP PROCEDURE IF EXISTS create_player_game_stats;
 CREATE PROCEDURE create_player_game_stats(
